@@ -1,11 +1,10 @@
-# Ignore build artifacts
 build/
+.vscode/
 *.o
 *.obj
 *.exe
 *.dll
 
-# Ignore CMake generated files
 CMakeFiles/
 CMakeCache.txt
 cmake_install.cmake

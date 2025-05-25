@@ -1,8 +1,10 @@
-enable_testing()
+# /test/CMakeLists.txt
 
-add_executable(Main_test main_test.cpp)
+add_executable(GreetingTest test_main.cpp)
 
-target_link_libraries(Main_test PRIVATE gtest_main)
+target_link_libraries(GreetingTest PRIVATE src_lib gtest_main lnl)
+
+target_include_directories(GreetingTest PRIVATE ${CMAKE_SOURCE_DIR}/include)
 
 include(GoogleTest)
-gtest_discover_tests(Main_test)
+gtest_discover_tests(GreetingTest)

@@ -2,4 +2,4 @@
 
 using namespace std;
 
-string getGreeting(){}
+string getGreeting();

@@ -1,0 +1,9 @@
+{
+    "files.associations": {
+        "iostream": "cpp",
+        "string": "cpp"
+    },
+    "cmake.configureArgs": [
+        "-DCMAKE_POLICY_VERSION_MINIMUM=3.5"
+    ]
+}

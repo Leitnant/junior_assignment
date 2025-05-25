@@ -6,4 +6,5 @@ using namespace std;
 
 int main() {
     cout << getGreeting();
+    while(1){}
 }

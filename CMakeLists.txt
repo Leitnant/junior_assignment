@@ -42,22 +42,19 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/libs/mavlink)
 # LiteNetLibPP already includes gtest, enable if using another sockets library
 #add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/libs/googletest)
 
-add_library(src_lib STATIC src/greeting.cpp)
-target_include_directories(src_lib PUBLIC ${CMAKE_SOURCE_DIR}/include)
-
 # GCS
-add_executable(GCS src/gcs_main.cpp)
+add_executable(GCS src/gcs_main.cpp src/gcs.cpp src/server_listener.cpp)
 target_link_libraries(GCS PRIVATE lnl imgui)
+target_include_directories(GCS PUBLIC ${CMAKE_SOURCE_DIR}/include)
 
 # Drone
-add_executable(Drone src/drone_main.cpp)
+add_executable(Drone src/drone_main.cpp src/drone.cpp src/client_listener.cpp)
 target_link_libraries(Drone PRIVATE lnl)
+target_include_directories(Drone PUBLIC ${CMAKE_SOURCE_DIR}/include)
 
-# Main
-add_executable(Main src/main.cpp)
-target_link_libraries(Main PRIVATE src_lib)
-
-
+# Server
+add_executable(Example src/example_server.cpp)
+target_link_libraries(Example PRIVATE lnl)
 # Unit Tests
 enable_testing()
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/test)

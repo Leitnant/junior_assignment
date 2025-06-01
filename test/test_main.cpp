@@ -1,5 +1,9 @@
 #include <gtest/gtest.h>
-#include "greeting.h"
+#include <string>
+
+std::string getGreeting(){
+    return "Hello, World!";
+}
 
 TEST(GreetingTest, ReturnsCorrectGreeting) {
     EXPECT_EQ(getGreeting(), "Hello, World!");

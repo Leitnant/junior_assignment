@@ -1,7 +1,11 @@
 #pragma once
-#include "listener_server.h"
-#include <string>
+
+#include <mavlink.h>
 #include <iostream>
+#include <string>
+#include <thread>
+
+#include "listener_server.h"
 
 using namespace std;
 
@@ -15,7 +19,7 @@ public:
 
     void sendBinary(const uint8_t* data, size_t length);
 
-    void handleReceivedData(string message);
+    void handleReceivedData(mavlink_message_t msg);
 
     void startCommunicationLoop();
 

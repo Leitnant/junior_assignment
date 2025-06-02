@@ -1,4 +1,3 @@
-#include <string>
 
 #include "listener_server.h"
 #include "udp_server.h"
@@ -27,8 +26,21 @@ void UDPServer::sendBinary(const uint8_t* data, size_t length) {
     printf("[UDP SERVER](TX): Sent %zu bytes\n", length);
 }
 
-void UDPServer::handleReceivedData(string message) {
-    printf("[UDP SERVER](RX): %s\n", message.c_str());
+void UDPServer::handleReceivedData(mavlink_message_t msg) {
+    switch (msg.msgid){
+        case MAVLINK_MSG_ID_HEARTBEAT:
+            mavlink_heartbeat_t heartbeat;
+            mavlink_msg_heartbeat_decode(&msg, &heartbeat);
+            //additional handling logic for later
+            break;
+        case MAVLINK_MSG_ID_LOCAL_POSITION_NED:
+            mavlink_local_position_ned_t dronePos;
+            mavlink_msg_local_position_ned_decode(&msg, &dronePos);
+            //give data to gcs, but flip Z axis!
+        default:
+            printf("[UDP SERVER]: Received unexcpected message.\n");
+            break;
+    }
 }
 
 void UDPServer::startCommunicationLoop() {

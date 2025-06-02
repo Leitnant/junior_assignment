@@ -38,9 +38,7 @@ void client_listener::on_network_receive(   shared_ptr<lnl::net_peer>& peer,
     mavlink_status_t status;
     
     for (size_t i = 0; i < message_length; i++){
-        if (mavlink_parse_char(MAVLINK_COMM_0, buffer[i], &msg, &status)){
-            printf("[UDP CLIENT](RX): Received MAVLink message with msgid: %d\n", msg.msgid);
-        }
+        mavlink_parse_char(MAVLINK_COMM_0, buffer[i], &msg, &status);
     }
     owner->handleReceivedData(msg);
 }

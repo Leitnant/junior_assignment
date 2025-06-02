@@ -64,8 +64,8 @@ using namespace std;
             0,
             MAV_GOTO_DO_CONTINUE, // command to resume operation immediately
             MAV_GOTO_HOLD_AT_SPECIFIED_POSITION, // command to go to the new position
-            MAV_FRAME_LOCAL_ENU, // set frame as X+ = east, Y+ = North, Z+ = Alt
-            0, x, y, alt
+            MAV_FRAME_LOCAL_NED, // set frame as X+ = north, Y+ = east, Z+ = down
+            0, x, y, -alt // flip the Z value to point up
         );
         
         uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
@@ -73,6 +73,15 @@ using namespace std;
         
         this->udpServer.sendBinary(buffer, message_length);
     }
+
+    void GCS::updateDroneState(float x, float y, float alt, bool armed){
+        this->droneState.x = x;
+        this->droneState.y = x;
+        this->droneState.alt = alt;
+        this->droneState.armed = armed;
+    }
+
+    void GCS::updateHeartbeatTime(){}
 
     void GCS::displayStatus(){
     }

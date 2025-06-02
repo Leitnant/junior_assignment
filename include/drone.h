@@ -7,6 +7,10 @@ class Drone {
 public:
     Drone(float x, float y, float alt, lnl::net_address serverAdress);
 
+    void send_heartbeat();
+
+    void send_ack();
+
     bool isConnected();
 
 private:

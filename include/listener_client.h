@@ -1,5 +1,6 @@
 #pragma once
 #include <lnl/lnl.h>
+#include <cstdint>
 #include <memory>
 #include <string>
 

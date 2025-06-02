@@ -1,9 +1,12 @@
 #pragma once
 
 #include <mavlink.h>
+#include <lnl/lnl.h>
 #include <iostream>
 #include <string>
 #include <thread>
+#include <atomic>
+#include <memory>
 
 #include "listener_server.h"
 

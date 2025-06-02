@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <thread>
+#include <atomic>
 
 #include "listener_client.h"
 

@@ -28,7 +28,13 @@ public:
 
     void communicationLoop();
 
+    void setConnectionState(bool state);
+
+    bool isConnected();
+
+
 private:
+    bool connected = false;
     atomic<bool> running = false;
     thread commThread;
 

@@ -1,4 +1,5 @@
 #include "udp_client.h"
+#include "drone.h"
 
 UDPClient::UDPClient(lnl::net_address serverAdress) :   owner(nullptr),
                                                         serverAdress(serverAdress),
@@ -26,31 +27,50 @@ void UDPClient::sendBinary(const uint8_t* data, size_t length) {
 }
 
 void UDPClient::handleReceivedData(mavlink_message_t msg) {
-    if (msg.msgid == MAVLINK_MSG_ID_COMMAND_LONG){
+    if (msg.msgid == MAVLINK_MSG_ID_COMMAND_LONG) {
         mavlink_command_long_t command;
         mavlink_msg_command_long_decode(&msg, &command);
-        if (command.command == MAV_CMD_DO_SET_MODE){
-            if (command.param2 == 216){
-                printf("[UDP CLIENT]: Received ARM!\n");
-            } else if (command.param2 == 88) {
-                printf("[UDP CLIENT]: Received DISARM!\n");
-            } else {
-                printf("[UDP CLIENT]: Received invalid mode: %d\n", (int)command.param2);
-            }
-        } else if (command.command == MAV_CMD_OVERRIDE_GOTO) {
-            printf("[UDP CLIENT]: GOTO %f, %f, %f\n", command.param5, command.param6, command.param7);
+
+        switch (command.command) {
+            case MAV_CMD_DO_SET_MODE:
+                switch (static_cast<int>(command.param2)) {
+                    case 216:
+                        printf("[UDP CLIENT]: Received ARM!\n");
+                        owner->setArmedState(true);
+                        break;
+                    case 88:
+                        printf("[UDP CLIENT]: Received DISARM!\n");
+                        owner->setArmedState(false);
+                        break;
+                    default:
+                        printf("[UDP CLIENT]: Received invalid mode: %d\n", (int)command.param2);
+                        break;
+                }
+                owner->send_ack(command.param2);
+                break;
+
+            case MAV_CMD_OVERRIDE_GOTO:
+                printf("[UDP CLIENT]: GOTO %f, %f, %f\n", command.param5, command.param6, -command.param7); //param7 (Z) needs to be flipped in NED point up
+                owner->setTargetPos(command.param5, command.param6, -command.param7); //param7 (Z) needs to be flipped in NED to point up
+                owner->send_ack(command.param2);
+                break;
+
+            default:
+                printf("[UDP CLIENT]: Received unknown command: %d\n", (int)command.command);
+                break;
         }
     }
 }
 
 void UDPClient::startCommunicationLoop() {
     running = true;
-    client.connect(serverAdress, writer);
+    peer = client.connect(serverAdress, writer);
     commThread = thread(&UDPClient::communicationLoop, this);
 }
 
 void UDPClient::stopCommunicationLoop() {
     running = false;
+    peer = nullptr;
     if (commThread.joinable()) {
         commThread.join();
     }
@@ -63,4 +83,11 @@ void UDPClient::communicationLoop() {
     }
     client.disconnect_all();
     printf("[UDP CLIENT]: Communication stopped\n");
+}
+void UDPClient::setConnectionState(bool state){
+    connected = state;
+}
+
+bool UDPClient::isConnected(){
+    return connected;
 }

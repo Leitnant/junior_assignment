@@ -1,6 +1,7 @@
 
 #include "listener_server.h"
 #include "udp_server.h"
+#include "gcs.h"
 
 UDPServer::UDPServer(int port) :    owner(nullptr),
                                     server(&listener) {
@@ -31,14 +32,20 @@ void UDPServer::handleReceivedData(mavlink_message_t msg) {
         case MAVLINK_MSG_ID_HEARTBEAT:
             mavlink_heartbeat_t heartbeat;
             mavlink_msg_heartbeat_decode(&msg, &heartbeat);
-            //additional handling logic for later
+            owner->updateHeartbeat(heartbeat.system_status);
             break;
         case MAVLINK_MSG_ID_LOCAL_POSITION_NED:
             mavlink_local_position_ned_t dronePos;
             mavlink_msg_local_position_ned_decode(&msg, &dronePos);
-            //give data to gcs, but flip Z axis!
+            owner->updateDronePos(dronePos.x, dronePos.y, -dronePos.z); //give data to gcs, but flip Z axis!
+            break;
+        case MAVLINK_MSG_ID_COMMAND_ACK:
+            mavlink_command_ack_t ack;
+            mavlink_msg_command_ack_decode(&msg, &ack);
+            printf("(ACK): ", ack.command);
+            break;  
         default:
-            printf("[UDP SERVER]: Received unexcpected message.\n");
+            printf("[UDP SERVER]: Received unexcpected message. %d\n", msg.msgid);
             break;
     }
 }

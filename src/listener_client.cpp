@@ -11,12 +11,14 @@ void client_listener::setOwner(UDPClient* owner) {
 
 void client_listener::on_peer_connected(shared_ptr<lnl::net_peer>& peer) {
     printf("[UDP CLIENT]: Connected!\n");
+    owner->setConnectionState(true);
 }
 
 void client_listener::on_peer_disconnected( shared_ptr<lnl::net_peer>& peer,
                                             lnl::disconnect_info& disconnectInfo) {
     printf("[UDP CLIENT]: Connection failed, reconnecting...\n");
     // wair for 1 sec and attempt reconnect
+    owner->setConnectionState(false);
     std::this_thread::sleep_for(std::chrono::seconds(1));
     owner->client.connect(owner->serverAdress, owner->writer);
 }
@@ -37,10 +39,11 @@ void client_listener::on_network_receive(   shared_ptr<lnl::net_peer>& peer,
     mavlink_message_t msg;
     mavlink_status_t status;
     
-    for (size_t i = 0; i < message_length; i++){
-        mavlink_parse_char(MAVLINK_COMM_0, buffer[i], &msg, &status);
+    for (size_t i = 0; i < message_length; ++i) {
+        if (mavlink_parse_char(MAVLINK_COMM_0, buffer[i], &msg, &status)) {
+            owner->handleReceivedData(msg);
+        }
     }
-    owner->handleReceivedData(msg);
 }
 
 void client_listener::on_network_receive_unconnected(   const lnl::net_address& endpoint, 

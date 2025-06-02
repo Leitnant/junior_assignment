@@ -24,10 +24,9 @@ int main() {
             printf(  "[GCS]: Arm           [1]\n");
             printf(  "[GCS]: Disarm        [2]\n");
             printf(  "[GCS]: Goto          [3]\n");
-            printf(  "[GCS]: Choose action: ");
+            printf(  "[GCS]: Choose action ");
 
             cin >> choice;
-
             switch (choice){
                 case ARM:
                     printf("[GCS]: Arming drone...\n");

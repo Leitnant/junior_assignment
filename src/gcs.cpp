@@ -1,10 +1,13 @@
 #include <mavlink.h>
-#include "gcs.h"
+#include <chrono>
 
+#include "gcs.h"
 
 using namespace std;
 
     GCS::GCS(int port) : udpServer(port){
+        lastHeartbeatTime = chrono::steady_clock::now();
+        udpServer.setOwner(this);
     }
 
     void GCS::send_arm(){
@@ -65,7 +68,10 @@ using namespace std;
             MAV_GOTO_DO_CONTINUE, // command to resume operation immediately
             MAV_GOTO_HOLD_AT_SPECIFIED_POSITION, // command to go to the new position
             MAV_FRAME_LOCAL_NED, // set frame as X+ = north, Y+ = east, Z+ = down
-            0, x, y, -alt // flip the Z value to point up
+            0, 
+            x, 
+            y, 
+            -alt // flip the Z value to point up
         );
         
         uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
@@ -74,16 +80,26 @@ using namespace std;
         this->udpServer.sendBinary(buffer, message_length);
     }
 
-    void GCS::updateDroneState(float x, float y, float alt, bool armed){
-        this->droneState.x = x;
-        this->droneState.y = x;
-        this->droneState.alt = alt;
-        this->droneState.armed = armed;
+    void GCS::updateDronePos(float x, float y, float alt){
+        droneState.x = x;
+        droneState.y = y;
+        droneState.alt = alt;
+        printf("X: %f Y: %f ALT: %f\n", droneState.x, droneState.y, droneState.alt);
     }
 
-    void GCS::updateHeartbeatTime(){}
+    void GCS::updateHeartbeat(int mode){
+        droneState.mode = mode;
+        lastHeartbeatTime = chrono::steady_clock::now();
+    }
 
     void GCS::displayStatus(){
+        chrono::steady_clock::time_point now = chrono::steady_clock::now();
+        chrono::milliseconds elapsed = chrono::duration_cast<chrono::milliseconds>(now - lastHeartbeatTime);
+        printf("[GCS]: Drone status\n");
+        printf("[ X ]: %f\n", droneState.x);
+        printf("[ Y ]: %f\n", droneState.y);
+        printf("[Alt]: %f\n", droneState.alt);
+        printf("[HBT]: %d ms since HBT\n", (int)elapsed.count());        
     }
 
     bool GCS::isConnected() {

@@ -1,6 +1,7 @@
 #pragma once
+
+#include <chrono>
 #include "udp_server.h"
-#include <string>
 
 using namespace std;
 
@@ -8,7 +9,7 @@ struct DroneState{
     float x = 0;
     float y = 0;
     float alt = 0;
-    bool armed = false;
+    int mode = 88;
 };
 
 class GCS {
@@ -21,9 +22,9 @@ public:
 
     void send_goto(float x, float y, float alt);
 
-    void updateDroneState(float x, float y, float alt, bool armed);
+    void updateDronePos(float x, float y, float alt);
 
-    void updateHeartbeatTime();
+    void updateHeartbeat(int mode);
 
     void displayStatus();
     
@@ -33,4 +34,5 @@ public:
 private:
     UDPServer udpServer;
     DroneState droneState;
+    chrono::steady_clock::time_point lastHeartbeatTime;
 };

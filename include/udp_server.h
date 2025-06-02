@@ -9,54 +9,28 @@ class GCS;
 
 class UDPServer {
 public:
-    UDPServer(int port) :   owner(nullptr),
-                            server(&listener) {
-        listener.setOwner(this);
-        printf("[UDP SERVER]: Starting...\n");
-        server.start(port);
-        printf("[UDP SERVER]: Started on port %d", port);
-        startCommunicationLoop();
-    }
-    
-    void setOwner(GCS* owner) {
-        this->owner = owner;
-    }
+    UDPServer(int port);
 
-    void send(const string& message) {
-        writer.reset();
-        writer.write(message);
-        peer->send(writer, lnl::DELIVERY_METHOD::RELIABLE_ORDERED);
+    void setOwner(GCS* owner);
 
-        printf("[UDP SERVER](TX): %s\n", message.c_str());
-    }
+    void sendBinary(const uint8_t* data, size_t length);
 
-    void handleReceivedData(string message) {
-        printf("[UDP SERVER](RX): %s\n", message.c_str());
-    }
-    
-    void startCommunicationLoop() {
-        running = true;
-        commThread = thread(&UDPServer::communicationLoop, this);
-    }
-    
-    void stopCommunicationLoop() {
-        running = false;
-        if (commThread.joinable()) {
-            commThread.join();
-        }
-    }
+    void handleReceivedData(string message);
 
-    void communicationLoop() {
-        while (running) {
-            server.poll_events();
-            this_thread::sleep_for(chrono::milliseconds(10));
-        }
-        server.disconnect_all();
-        printf("[UDP SERVER]: Communication stopped\n");
-    }
+    void startCommunicationLoop();
 
+    void stopCommunicationLoop();
+
+    void communicationLoop();
+
+    void setPeer(shared_ptr<lnl::net_peer> peer);
+
+    void setConnectedState(bool state);
+
+    bool isConnected();
 
 private:
+    atomic<bool> connected = false;
     atomic<bool> running = false;
     thread commThread;
 

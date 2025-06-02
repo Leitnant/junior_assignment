@@ -10,13 +10,13 @@ public:
 
     void send_arm();
 
-    void send_goto();
+    void send_disarm();
 
-    void send_geofence();
-
-    void update();
+    void send_goto(float x, float y, float alt);
 
     void displayStatus();
+    
+    bool isConnected();
 
 private:
     UDPServer udpServer;

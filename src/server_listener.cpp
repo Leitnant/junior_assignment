@@ -12,11 +12,15 @@ void server_listener::setOwner(UDPServer* owner) {
 
 void server_listener::on_peer_connected(shared_ptr<lnl::net_peer>& peer) {
     printf("[UDP SERVER]: Connected to client!\n");
+    owner->peer = peer;
+    owner->setConnectedState(true);
 }
 
 void server_listener::on_peer_disconnected( shared_ptr<lnl::net_peer>& peer,
                                             lnl::disconnect_info& disconnectInfo) {
-    printf("[UDP SERVER]: Client disconnected.\n");
+    printf("\n[UDP SERVER]: Client disconnected.\n");
+    owner->peer = nullptr;
+    owner->setConnectedState(false);
 }
 
 void server_listener::on_network_error( const lnl::net_address& endpoint,
@@ -55,7 +59,8 @@ void server_listener::on_network_receive_unconnected(   const lnl::net_address& 
 }
 
 void server_listener::on_network_latency_update(shared_ptr<lnl::net_peer>& peer, int latency){
-    printf("[UDP SERVER]: Network latency of peer %d: %d ms\n", peer->connect_number(), latency);
+    //Disabled due to no use
+    //printf("[UDP SERVER]: Network latency of peer %d: %d ms\n", peer->connect_number(), latency);
 }
 
 

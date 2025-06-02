@@ -11,6 +11,10 @@ UDPClient::UDPClient(lnl::net_address serverAdress) :   owner(nullptr),
     startCommunicationLoop();
 }
 
+UDPClient::~UDPClient(){
+    stopCommunicationLoop();
+}
+
 void UDPClient::setOwner(Drone* owner) {
     this->owner = owner;
 }

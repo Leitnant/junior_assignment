@@ -11,6 +11,9 @@ UDPServer::UDPServer(int port) :    owner(nullptr),
     printf("[UDP SERVER]: Started on port %d\n", port);
     startCommunicationLoop();
 }
+UDPServer::~UDPServer(){
+    stopCommunicationLoop();
+}
 
 void UDPServer::setOwner(GCS* owner) {
     this->owner = owner;
@@ -42,7 +45,7 @@ void UDPServer::handleReceivedData(mavlink_message_t msg) {
         case MAVLINK_MSG_ID_COMMAND_ACK:
             mavlink_command_ack_t ack;
             mavlink_msg_command_ack_decode(&msg, &ack);
-            printf("(ACK): ", ack.command);
+            printf("(ACK): ");
             break;  
         default:
             printf("[UDP SERVER]: Received unexcpected message. %d\n", msg.msgid);

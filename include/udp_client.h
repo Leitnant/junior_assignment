@@ -16,6 +16,8 @@ class UDPClient {
 public:
     UDPClient(lnl::net_address serverAdress);
 
+    ~UDPClient();
+
     void setOwner(Drone* owner);
 
     void sendBinary(const uint8_t* data, size_t length);

@@ -6,6 +6,7 @@
 #include <cmath>
 
 using namespace std;
+
 Drone::Drone(float speed, float geofence, lnl::net_address serverAdress) : speed(speed), geofence(geofence), udpClient(serverAdress){
     udpClient.setOwner(this);
     printf("[DRONE]: Drone setup complete!\n");
@@ -111,4 +112,8 @@ bool Drone::isConnected() {
 
 bool Drone::isArmed() {
     return armed;
+}
+
+UDPClient* Drone::getClientPointer(){
+    return &udpClient;
 }

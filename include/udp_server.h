@@ -17,6 +17,7 @@ class GCS;
 class UDPServer {
 public:
     UDPServer(int port);
+    ~UDPServer();
 
     void setOwner(GCS* owner);
 

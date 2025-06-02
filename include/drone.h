@@ -12,23 +12,27 @@ struct Position{
 class Drone {
 
 public:
+
     Drone(float speed, float geofence, lnl::net_address serverAdress);
 
     void updatePosition();
+    //Virtual functions for gtest
+    virtual void setArmedState(bool state);
 
-    void setArmedState(bool state);
-
-    void setTargetPos(float x, float y, float alt);
+    virtual void setTargetPos(float x, float y, float alt);
 
     void send_heartbeat();
 
     void send_position();
 
-    void send_ack(int command);
+    virtual void send_ack(int command);
 
     bool isConnected();
 
     bool isArmed();
+
+protected:
+    UDPClient* getClientPointer(); //Messed up, need this for gtest
 
 private:
     bool armed = false;

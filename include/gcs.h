@@ -21,15 +21,17 @@ public:
     void send_disarm();
 
     void send_goto(float x, float y, float alt);
+    //Messed up, virtual for gtesting
+    virtual void updateDronePos(float x, float y, float alt);
 
-    void updateDronePos(float x, float y, float alt);
-
-    void updateHeartbeat(int mode);
+    virtual void updateHeartbeat(int mode);
 
     void displayStatus();
     
     bool isConnected();
 
+protected:
+    UDPServer* getServerPointer(); // Messed up, need this for gtest
 
 private:
     UDPServer udpServer;

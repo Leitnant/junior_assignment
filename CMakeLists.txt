@@ -43,12 +43,12 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/libs/mavlink)
 #add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/libs/googletest)
 
 # GCS
-add_executable(GCS src/gcs_main.cpp src/gcs.cpp src/udp_server.cpp src/server_listener.cpp)
+add_executable(GCS src/gcs_main.cpp src/gcs.cpp src/udp_server.cpp src/listener_server.cpp)
 target_link_libraries(GCS PRIVATE lnl imgui)
 target_include_directories(GCS PUBLIC ${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/libs/mavlink/common)
 
 # Drone
-add_executable(Drone src/drone_main.cpp src/drone.cpp src/udp_client.cpp src/client_listener.cpp)
+add_executable(Drone src/drone_main.cpp src/drone.cpp src/udp_client.cpp src/listener_client.cpp)
 target_link_libraries(Drone PRIVATE lnl)
 target_include_directories(Drone PUBLIC ${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/libs/mavlink/common)
 

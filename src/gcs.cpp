@@ -1,7 +1,6 @@
-#include "gcs.h"
-#include <iostream>
-#include <string>
 #include <mavlink.h>
+#include "gcs.h"
+
 
 using namespace std;
 

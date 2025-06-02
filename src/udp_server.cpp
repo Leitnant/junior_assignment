@@ -1,8 +1,7 @@
-#pragma once
-#include "server_listener.h"
-#include "udp_server.h"
 #include <string>
-#include <iostream>
+
+#include "listener_server.h"
+#include "udp_server.h"
 
 UDPServer::UDPServer(int port) :    owner(nullptr),
                                     server(&listener) {

@@ -27,6 +27,12 @@ public:
                             uint8_t channelNumber,
                             lnl::DELIVERY_METHOD deliveryMethod) override;
 
+    void on_network_receive_unconnected(const lnl::net_address& endpoint, 
+                                        lnl::net_data_reader& reader,
+                                        lnl::UNCONNECTED_MESSAGE_TYPE messageType) override;
+
+    void on_network_latency_update(shared_ptr<lnl::net_peer>& peer, int latency) override;
+
     void on_connection_request(shared_ptr<lnl::net_connection_request>& request) override;
 
     void on_message_delivered(shared_ptr<lnl::net_peer>& peer, void* userData) override;

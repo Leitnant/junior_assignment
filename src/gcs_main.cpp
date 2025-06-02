@@ -9,7 +9,7 @@ using namespace std;
 int main() {
     lnl::initialize();
 
-    printf("[DRONE]: Starting GCS...\n");
+    printf("[GCS]: Starting GCS...\n");
     GCS gcs(4499);
 
     while (1) {

@@ -19,7 +19,6 @@ public:
         printf("[UDP CLIENT]: Starting...\n");
         client.start();
         printf("[UDP CLIENT]: Connecting to %s:%d\n",(serverAdress.address()).c_str(), serverAdress.port());
-        client.connect(serverAdress, writer);
         startCommunicationLoop();
     }
 
@@ -42,7 +41,8 @@ public:
 
     void startCommunicationLoop() {
         running = true;
-        commThread = std::thread(&UDPClient::communicationLoop, this);
+        client.connect(serverAdress, writer);
+        commThread = thread(&UDPClient::communicationLoop, this);
     }
     
     void stopCommunicationLoop() {
@@ -55,8 +55,9 @@ public:
     void communicationLoop() {
         while (running) {
         client.poll_events();
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        this_thread::sleep_for(chrono::milliseconds(10));
         }
+        client.disconnect_all();
         printf("[UDP CLIENT]: Communication stopped\n");
     }
 

@@ -3,17 +3,15 @@
 
 using namespace std;
 
-GCS::GCS(int port) {
-    udpServer.init(port);
-}
-
-void GCS::update() {
-    string incoming = udpServer.receive();
-    if (!incoming.empty()) {
-        message = incoming;
+    GCS::GCS(int port) : udpServer(port){
     }
-}
 
-void GCS::displayStatus() {
-    cout << "GCS: Current Drone Telemetry: " << incoming << "\n";
-}
+    void GCS::send_arm(){}
+
+    void GCS::send_goto(){}
+
+    void GCS::send_geofence(){}
+
+    void GCS::update(){}
+
+    void GCS::displayStatus(){}

@@ -16,7 +16,7 @@ int main() {
             }
             drone.send_heartbeat();
             drone.send_position();
-            this_thread::sleep_for(chrono::milliseconds(1000));
+            this_thread::sleep_for(chrono::milliseconds(100));
         }
     }
 

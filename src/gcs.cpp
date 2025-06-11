@@ -22,7 +22,7 @@ void GCS::send_arm(){
         MAV_CMD_DO_SET_MODE,
         0,      //confirm?
         MAV_MODE_FLAG_CUSTOM_MODE_ENABLED,
-        216,    // GUIDED_ARMED
+        MAV_MODE_GUIDED_ARMED,
         0, 0, 0, 0, 0
     );
 
@@ -44,7 +44,7 @@ void GCS::send_disarm(){
         MAV_CMD_DO_SET_MODE,
         0,      //confirm?
         MAV_MODE_FLAG_CUSTOM_MODE_ENABLED,
-        88,    // GUIDED_ARMED
+        MAV_MODE_GUIDED_DISARMED,
         0, 0, 0, 0, 0
     );
     

@@ -38,11 +38,11 @@ void UDPClient::handleReceivedData(mavlink_message_t msg) {
         switch (command.command) {
             case MAV_CMD_DO_SET_MODE:
                 switch (static_cast<int>(command.param2)) {
-                    case 216:
+                    case MAV_MODE_GUIDED_ARMED:
                         printf("[UDP CLIENT]: Received ARM!\n");
                         owner->setArmedState(true);
                         break;
-                    case 88:
+                    case MAV_MODE_GUIDED_DISARMED:
                         printf("[UDP CLIENT]: Received DISARM!\n");
                         owner->setArmedState(false);
                         break;

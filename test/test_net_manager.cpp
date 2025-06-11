@@ -12,6 +12,12 @@
 #include "gcs.h"
 #include "drone.h"
 
+#define GCS_SYSID 255
+#define GCS_COMPID 190
+
+#define DRONE_SYSID 1
+#define DRONE_COMPID 1
+
 using namespace std;
 
 // Test Classes due to me being a dumbass and designing myself into a corner
@@ -82,8 +88,8 @@ TEST(UDPServerTest, HandlesHeartbeatMessage) {
     
     mavlink_message_t msg;
     mavlink_msg_heartbeat_pack(
-        1, 
-        1, 
+        DRONE_SYSID, 
+        DRONE_COMPID, 
         &msg, 
         MAV_TYPE_GCS, 
         MAV_AUTOPILOT_INVALID,
@@ -106,8 +112,8 @@ TEST(UDPServerTest, HandlesLocalPositionMessage) {
     mavlink_message_t position;
     float x = 1, y = 2, alt = 3;
     mavlink_msg_local_position_ned_pack(
-        1, //system ID
-        1, //component ID
+        DRONE_SYSID, //system ID
+        DRONE_COMPID, //component ID
         &position,
         0, //ms since system boot, won't be sending
         x,
@@ -133,8 +139,8 @@ TEST(UDPClientTest, HandlesArmCommand) {
 
     mavlink_message_t msg;
     mavlink_msg_command_long_pack(
-        255,
-        190,
+        GCS_SYSID,
+        GCS_COMPID,
         &msg,
         1,
         1,
@@ -161,8 +167,8 @@ TEST(UDPClientTest, HandlesDisarmCommand) {
 
     mavlink_message_t msg;
     mavlink_msg_command_long_pack(
-        255,
-        190,
+        GCS_SYSID,
+        GCS_COMPID,
         &msg,
         1,
         1,
@@ -189,8 +195,8 @@ TEST(UDPClientTest, HandlesGotoCommand) {
     mavlink_message_t msg;
     float x = 100, y = 200, alt = 300;
     mavlink_msg_command_long_pack(
-        255,
-        190,
+        GCS_SYSID,
+        GCS_COMPID,
         &msg,
         1,
         1,

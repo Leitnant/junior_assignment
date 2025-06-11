@@ -85,7 +85,8 @@
         "xutility": "cpp",
         "memory_resource": "cpp",
         "string_view": "cpp",
-        "cinttypes": "cpp"
+        "cinttypes": "cpp",
+        "future": "cpp"
     },
     "cmake.configureArgs": [
         "-DCMAKE_POLICY_VERSION_MINIMUM=3.5"

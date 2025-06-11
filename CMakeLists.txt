@@ -1,6 +1,4 @@
-# Changed version nr to get access to CMAKE_MSVC_RUNTIME_LIBRARY
-# I needed it for the googletest fix
-cmake_minimum_required (VERSION 3.15)
+cmake_minimum_required (VERSION 3.20)
 project(KrattTestAssignment LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -14,6 +12,9 @@ endif()
 if(MSVC)
   set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDebugDLL" CACHE STRING "" FORCE)
 endif()
+
+# Simple UDP https://github.com/RedFox20/SimpleUDP.git
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/libs/simpleudp)
 
 # LiteNetLibPP fork https://github.com/RedFox20/LiteNetLibPP
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/libs/LiteNetLibPP)
@@ -46,6 +47,11 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/libs/mavlink)
 # Google Test https://github.com/google/googletest.git
 # LiteNetLibPP already includes gtest, enable if using another sockets library
 #add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/libs/googletest)
+
+# TESTMAIN
+add_executable(test_main src/test_main.cpp src/new_udp_client.cpp src/new_udp_server.cpp)
+target_link_libraries(test_main PRIVATE SimpleUdp)
+target_include_directories(test_main PUBLIC ${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/libs/mavlink/common ${CMAKE_SOURCE_DIR}/libs/simpleudp)
 
 # GCS
 add_executable(GCS src/gcs_main.cpp src/gcs.cpp src/udp_server.cpp src/listener_server.cpp)

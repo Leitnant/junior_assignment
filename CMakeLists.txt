@@ -5,6 +5,11 @@ project(KrattTestAssignment LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Reduce errors when using GCC?
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+  add_compile_options(-Wno-address-of-packed-member)
+endif()
+
 # Fix to get googletest to compile
 if(MSVC)
   set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDebugDLL" CACHE STRING "" FORCE)

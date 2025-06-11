@@ -2,6 +2,7 @@
 #include <lnl/lnl.h>
 
 #include <iostream>
+#include <string>
 
 using namespace std;
 
@@ -16,6 +17,7 @@ int main() {
     printf("[GCS]: Starting GCS...\n");
     GCS gcs(4499);
 
+    string input;
     int choice;
     float x, y, alt;
     while (1) {
@@ -26,7 +28,14 @@ int main() {
             printf(  "[GCS]: Goto          [3]\n");
             printf(  "[GCS]: Choose action ");
 
-            cin >> choice;
+            cin >> input;
+            try {
+                choice = stoi(input);
+            } catch (invalid_argument& e) {
+                printf("[GCS]: Invalid input! Please enter a number.\n");
+                continue;
+            }
+
             switch (choice){
                 case ARM:
                     printf("[GCS]: Arming drone...\n");
@@ -47,7 +56,7 @@ int main() {
                     gcs.send_goto(x, y, alt);
                     break;
                 default:
-                    printf("[GCS]: Invalid input!\n");
+                    printf("[GCS]: Invalid input! Number doesn't match a command.\n");
                     break;
 
             }

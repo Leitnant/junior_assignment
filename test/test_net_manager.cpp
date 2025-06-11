@@ -27,11 +27,11 @@ class TestGCS : public GCS {
         bool positionUpdated = false;
         float x = 0, y = 0, alt = 0;
     
-        void updateHeartbeat(int mode){
+        void updateHeartbeat(int mode) override {
             heartbeatUpdated = true;
             heartbeatState = mode;
         }
-        void updateDronePos(float newX, float newY, float newAlt){
+        void updateDronePos(float newX, float newY, float newAlt) override {
             positionUpdated = true;
             x = newX;
             y = newY;
@@ -55,18 +55,18 @@ class TestDrone : public Drone {
 
         
 
-        void setArmedState(bool state){
+        void setArmedState(bool state) override {
             armed = state;
         }
 
-        void setTargetPos(float x, float y, float alt){
+        void setTargetPos(float x, float y, float alt) override {
             targetSet = true;
             targetX = x;
             targetY = y;
             targetAlt = alt;
         }
 
-        void send_ack(int command){
+        void send_ack(int command) override {
             ackSent = true;
             ackCommand = command; // this is MAV_STATE on arm commands, 
         }

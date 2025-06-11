@@ -35,7 +35,7 @@ void UDPServer::handleReceivedData(mavlink_message_t msg) {
         case MAVLINK_MSG_ID_HEARTBEAT:
             mavlink_heartbeat_t heartbeat;
             mavlink_msg_heartbeat_decode(&msg, &heartbeat);
-            owner->updateHeartbeat(heartbeat.system_status);
+            owner->updateHeartbeat(heartbeat.base_mode);
             break;
         case MAVLINK_MSG_ID_LOCAL_POSITION_NED:
             mavlink_local_position_ned_t dronePos;

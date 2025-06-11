@@ -87,7 +87,6 @@ void GCS::updateDronePos(float x, float y, float alt){
     droneState.x = x;
     droneState.y = y;
     droneState.alt = alt;
-    printf("X: %f Y: %f ALT: %f\n", droneState.x, droneState.y, droneState.alt);
 }
 
 void GCS::updateHeartbeat(int mode){
@@ -95,14 +94,46 @@ void GCS::updateHeartbeat(int mode){
     lastHeartbeatTime = chrono::steady_clock::now();
 }
 
+void GCS::startDisplayLoop(){
+    dispRunning = true;
+    dispThread = thread(&GCS::displayStatus, this);
+}
+
+void GCS::stopDisplayLoop(){
+    dispRunning = false;
+    if (dispThread.joinable()) {
+        dispThread.join();
+    }
+}
+
+
 void GCS::displayStatus(){
-    chrono::steady_clock::time_point now = chrono::steady_clock::now();
-    chrono::milliseconds elapsed = chrono::duration_cast<chrono::milliseconds>(now - lastHeartbeatTime);
-    printf("[GCS]: Drone status\n");
-    printf("[ X ]: %f\n", droneState.x);
-    printf("[ Y ]: %f\n", droneState.y);
-    printf("[Alt]: %f\n", droneState.alt);
-    printf("[HBT]: %d ms since HBT\n", (int)elapsed.count());        
+    while (dispRunning) {
+        chrono::steady_clock::time_point now = chrono::steady_clock::now();
+        chrono::milliseconds elapsed = chrono::duration_cast<chrono::milliseconds>(now - lastHeartbeatTime);
+        
+        string armedMode;
+        if (droneState.mode == MAV_MODE_FLAG_GUIDED_ENABLED){
+            armedMode = "GUIDED_DISARMED";
+        } else if (droneState.mode == MAV_MODE_FLAG_GUIDED_ENABLED || MAV_MODE_FLAG_SAFETY_ARMED) {
+            armedMode = "GUIDED_ARMED";
+        } else {
+            armedMode = "UNKNOWN";
+        }
+        
+        if (isConnected()){
+            printf("[GCS]: Drone connected\n");
+            printf("[ARM]: %s\n", armedMode.c_str());
+            printf("[ X ]: %f\n", droneState.x);
+            printf("[ Y ]: %f\n", droneState.y);
+            printf("[Alt]: %f\n", droneState.alt);
+        } else {
+            printf("[GCS]: Drone disconnected\n");
+        }
+        printf("[HBT]: %d ms since HBT\n", (int)elapsed.count());
+        this_thread::sleep_for(chrono::milliseconds(1000));
+    }
+    printf("[GCS]: Information displaying stopped.\n");
 }
 
 bool GCS::isConnected() {

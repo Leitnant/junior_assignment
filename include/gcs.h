@@ -26,6 +26,11 @@ public:
 
     virtual void updateHeartbeat(int mode);
 
+
+    void startDisplayLoop();
+
+    void stopDisplayLoop();
+
     void displayStatus();
     
     bool isConnected();
@@ -34,6 +39,9 @@ protected:
     UDPServer* getServerPointer(); // Messed up, need this for gtest
 
 private:
+    atomic<bool> dispRunning = false;
+    thread dispThread;
+    
     UDPServer udpServer;
     DroneState droneState;
     chrono::steady_clock::time_point lastHeartbeatTime;

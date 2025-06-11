@@ -16,6 +16,7 @@ int main() {
     lnl::initialize();
     printf("[GCS]: Starting GCS...\n");
     GCS gcs(4499);
+    gcs.startDisplayLoop();
 
     string input;
     int choice;
@@ -64,5 +65,6 @@ int main() {
         }
 
     }
+    gcs.stopDisplayLoop();
     return 0;
 }

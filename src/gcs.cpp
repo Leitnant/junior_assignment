@@ -3,6 +3,9 @@
 
 #include "gcs.h"
 
+#define SYSID 255
+#define COMPID 190
+
 using namespace std;
 
 GCS::GCS(int port) : udpServer(port){
@@ -14,8 +17,8 @@ void GCS::send_arm(){
     mavlink_message_t msg;
 
     mavlink_msg_command_long_pack(
-        255,    //GCS ID
-        190,    //GCS component ID
+        SYSID,    //GCS ID
+        COMPID,    //GCS component ID
         &msg,   //struct to pack
         1,      //target ID
         1,      //target component ID
@@ -36,8 +39,8 @@ void GCS::send_disarm(){
     mavlink_message_t msg;
 
     mavlink_msg_command_long_pack(
-        255,    //GCS ID
-        190,    //GCS component ID
+        SYSID,    //GCS ID
+        COMPID,    //GCS component ID
         &msg,   //struct to pack
         1,      //target ID
         1,      //target component ID
@@ -58,8 +61,8 @@ void GCS::send_goto(float x, float y, float alt){
     mavlink_message_t msg;
 
     mavlink_msg_command_long_pack(
-        255,
-        190,
+        SYSID,
+        COMPID,
         &msg,
         1,
         1,

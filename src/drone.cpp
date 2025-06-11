@@ -5,6 +5,9 @@
 #include <chrono>
 #include <cmath>
 
+#define SYSID 1
+#define COMPID 1
+
 using namespace std;
 
 Drone::Drone(float speed, float geofence, lnl::net_address serverAdress) : speed(speed), geofence(geofence), udpClient(serverAdress){
@@ -40,22 +43,20 @@ void Drone::setTargetPos(float x, float y, float alt){
 
 void Drone::send_heartbeat(){
     mavlink_message_t heartbeat;
-    int mode = 0;
+    int mode = MAV_MODE_FLAG_GUIDED_ENABLED;
 
     if (armed) {
-        int mode = 216;
-    } else { 
-        int mode = 88;
+        mode |= MAV_MODE_FLAG_SAFETY_ARMED;
     }
 
     mavlink_msg_heartbeat_pack(
-        1, //system ID
-        1, //component ID
+        SYSID,
+        COMPID,
         &heartbeat,
-        MAV_TYPE_QUADROTOR, //system type
-        0, //autopilot type
-        MAV_MODE_FLAG_CUSTOM_MODE_ENABLED,
+        MAV_TYPE_QUADROTOR,
+        MAV_AUTOPILOT_GENERIC,
         mode,
+        0,
         MAV_STATE_ACTIVE
     );
 

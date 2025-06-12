@@ -24,13 +24,13 @@ GCS aknasse, kuhu peaks ka kirjutama sisendi, jookseb drooni telemeetria, mille 
 	 - siis tuleb sisestada ALT koordinaat. Nt: `100`
 
 ## Telemeetria
-**[HBT]:**  kuvan möödunud aega viimasest saabunud *heartbeat*-ist `CONNECTED` / `DISCONNECTED` asemel
+ - **[HBT]:**  kuvan möödunud aega viimasest saabunud *heartbeat*-ist `CONNECTED` / `DISCONNECTED` asemel
 
-**[ARM]:** `GUIDED_ARMED`/`GUIDED_DISARMED`
+ - **[ARM]:** `GUIDED_ARMED`/`GUIDED_DISARMED`
 
-**[ X ]:** `X koordinaat`
+ - **[ X ]:** `X koordinaat`
 
-**[ Y ]:** `Y koordinaat`
+ - **[ Y ]:** `Y koordinaat`
 
-**[ALT]:** `ALT koordinaat`
+ - **[ALT]:** `ALT koordinaat`
 

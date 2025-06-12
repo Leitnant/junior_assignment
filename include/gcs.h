@@ -1,7 +1,11 @@
 #pragma once
+#ifndef GCS_H
 
+#include <mavlink.h>
 #include <chrono>
-#include "udp_server.h"
+#include <iostream>
+
+#include "new_udp_server.h"
 
 using namespace std;
 
@@ -10,39 +14,43 @@ struct DroneState{
     float y = 0;
     float alt = 0;
     int mode = 88;
+    chrono::steady_clock::time_point lastHeartbeatTime;
 };
 
 class GCS {
 public:
-    GCS(int port);
+    GCS(int serverPort);
+    ~GCS();
 
-    void send_arm();
+    void setDroneState(float x, float y, float alt, int mode);
 
-    void send_disarm();
+    DroneState getDroneState();
 
-    void send_goto(float x, float y, float alt);
-    //Messed up, virtual for gtesting
-    virtual void updateDronePos(float x, float y, float alt);
+    void updateDronePos(float x, float y, float alt);
 
-    virtual void updateHeartbeat(int mode);
-
+    void updateHeartbeat(int mode);
 
     void startDisplayLoop();
 
     void stopDisplayLoop();
 
     void displayStatus();
+
+    void sendArm();
+
+    void sendDisarm();
+
+    void sendGoTo(float x, float y, float alt);
     
-    bool isConnected();
+    bool pollIncoming(int timeout_ms);
 
-protected:
-    UDPServer* getServerPointer(); // Messed up, need this for gtest
-
+    void handleIncoming();
 private:
     atomic<bool> dispRunning = false;
     thread dispThread;
     
-    UDPServer udpServer;
     DroneState droneState;
-    chrono::steady_clock::time_point lastHeartbeatTime;
+
+    UDPServer server;
 };
+#endif

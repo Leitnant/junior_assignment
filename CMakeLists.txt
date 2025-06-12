@@ -16,9 +16,6 @@ endif()
 # Simple UDP https://github.com/RedFox20/SimpleUDP.git
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/libs/simpleudp)
 
-# LiteNetLibPP fork https://github.com/RedFox20/LiteNetLibPP
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/libs/LiteNetLibPP)
-
 # GLFW+OpenGL https://github.com/glfw/glfw.git
 find_package(OpenGL REQUIRED)
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
@@ -46,7 +43,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/libs/mavlink)
 
 # Google Test https://github.com/google/googletest.git
 # LiteNetLibPP already includes gtest, enable if using another sockets library
-#add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/libs/googletest)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/libs/googletest)
 
 # TESTMAIN
 add_executable(test_main src/test_main.cpp src/new_udp_client.cpp src/new_udp_server.cpp)
@@ -54,14 +51,14 @@ target_link_libraries(test_main PRIVATE SimpleUdp)
 target_include_directories(test_main PUBLIC ${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/libs/mavlink/common ${CMAKE_SOURCE_DIR}/libs/simpleudp)
 
 # GCS
-add_executable(GCS src/gcs_main.cpp src/gcs.cpp src/udp_server.cpp src/listener_server.cpp)
-target_link_libraries(GCS PRIVATE lnl imgui)
-target_include_directories(GCS PUBLIC ${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/libs/mavlink/common)
+add_executable(GCS src/gcs_main.cpp src/gcs.cpp src/new_udp_server.cpp)
+target_link_libraries(GCS PRIVATE SimpleUdp)
+target_include_directories(GCS PUBLIC ${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/libs/mavlink/common ${CMAKE_SOURCE_DIR}/libs/simpleudp)
 
 # Drone
-add_executable(Drone src/drone_main.cpp src/drone.cpp src/udp_client.cpp src/listener_client.cpp)
-target_link_libraries(Drone PRIVATE lnl)
-target_include_directories(Drone PUBLIC ${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/libs/mavlink/common)
+add_executable(Drone src/drone_main.cpp src/drone.cpp src/new_udp_client.cpp)
+target_link_libraries(Drone PRIVATE SimpleUdp)
+target_include_directories(Drone PUBLIC ${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/libs/mavlink/common ${CMAKE_SOURCE_DIR}/libs/simpleudp)
 
 # Unit Tests
 enable_testing()

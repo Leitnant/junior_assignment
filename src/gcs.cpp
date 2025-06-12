@@ -1,6 +1,3 @@
-#include <mavlink.h>
-#include <chrono>
-
 #include "gcs.h"
 
 #define SYSID 255
@@ -8,137 +5,119 @@
 
 using namespace std;
 
-GCS::GCS(int port) : udpServer(port){
-    lastHeartbeatTime = chrono::steady_clock::now();
-    udpServer.setOwner(this);
+GCS::GCS(int serverPort):server(serverPort, "127.0.0.1", 4498) {
+    printf("[GCS]: Setup complete.\n");
 }
 
-void GCS::send_arm(){
-    mavlink_message_t msg;
-
-    mavlink_msg_command_long_pack(
-        SYSID,    //GCS ID
-        COMPID,    //GCS component ID
-        &msg,   //struct to pack
-        1,      //target ID
-        1,      //target component ID
-        MAV_CMD_DO_SET_MODE,
-        0,      //confirm?
-        MAV_MODE_FLAG_CUSTOM_MODE_ENABLED,
-        MAV_MODE_GUIDED_ARMED,
-        0, 0, 0, 0, 0
-    );
-
-    uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
-    size_t message_length = mavlink_msg_to_send_buffer(buffer, &msg);
-    
-    this->udpServer.sendBinary(buffer, message_length);
+GCS::~GCS() {
+    if (dispRunning) {
+        stopDisplayLoop();
+    }
 }
 
-void GCS::send_disarm(){
-    mavlink_message_t msg;
-
-    mavlink_msg_command_long_pack(
-        SYSID,    //GCS ID
-        COMPID,    //GCS component ID
-        &msg,   //struct to pack
-        1,      //target ID
-        1,      //target component ID
-        MAV_CMD_DO_SET_MODE,
-        0,      //confirm?
-        MAV_MODE_FLAG_CUSTOM_MODE_ENABLED,
-        MAV_MODE_GUIDED_DISARMED,
-        0, 0, 0, 0, 0
-    );
-    
-    uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
-    size_t message_length = mavlink_msg_to_send_buffer(buffer, &msg);
-    
-    this->udpServer.sendBinary(buffer, message_length);
+void GCS::setDroneState(float x, float y, float alt, int mode) {
+    droneState.x = x;
+    droneState.y = y;
+    droneState.alt = alt;
+    droneState.mode = mode;
 }
 
-void GCS::send_goto(float x, float y, float alt){
-    mavlink_message_t msg;
-
-    mavlink_msg_command_long_pack(
-        SYSID,
-        COMPID,
-        &msg,
-        1,
-        1,
-        MAV_CMD_OVERRIDE_GOTO, // command to set goto
-        0,
-        MAV_GOTO_DO_CONTINUE, // command to resume operation immediately
-        MAV_GOTO_HOLD_AT_SPECIFIED_POSITION, // command to go to the new position
-        MAV_FRAME_LOCAL_NED, // set frame as X+ = north, Y+ = east, Z+ = down
-        0, 
-        x, 
-        y, 
-        -alt // flip the Z value to point up
-    );
-    
-    uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
-    size_t message_length = mavlink_msg_to_send_buffer(buffer, &msg);
-    
-    this->udpServer.sendBinary(buffer, message_length);
+DroneState GCS::getDroneState() {
+    return droneState;
 }
 
-void GCS::updateDronePos(float x, float y, float alt){
+void GCS::updateDronePos(float x, float y, float alt) {
     droneState.x = x;
     droneState.y = y;
     droneState.alt = alt;
 }
 
-void GCS::updateHeartbeat(int mode){
+void GCS::updateHeartbeat(int mode) {
     droneState.mode = mode;
-    lastHeartbeatTime = chrono::steady_clock::now();
+    droneState.lastHeartbeatTime = chrono::steady_clock::now();
 }
 
-void GCS::startDisplayLoop(){
+void GCS::startDisplayLoop() {
     dispRunning = true;
     dispThread = thread(&GCS::displayStatus, this);
 }
 
-void GCS::stopDisplayLoop(){
+void GCS::stopDisplayLoop() {
     dispRunning = false;
     if (dispThread.joinable()) {
         dispThread.join();
     }
 }
 
-
-void GCS::displayStatus(){
+void GCS::displayStatus() {
     while (dispRunning) {
         chrono::steady_clock::time_point now = chrono::steady_clock::now();
-        chrono::milliseconds elapsed = chrono::duration_cast<chrono::milliseconds>(now - lastHeartbeatTime);
-        
+        chrono::milliseconds elapsed = chrono::duration_cast<chrono::milliseconds>(now - droneState.lastHeartbeatTime);
+        if (pollIncoming(50)){
+            handleIncoming();
+        }
+
+        bool guided = (droneState.mode & MAV_MODE_FLAG_GUIDED_ENABLED) != 0;
+        bool armed = (droneState.mode & MAV_MODE_FLAG_SAFETY_ARMED) != 0;
         string armedMode;
-        if (droneState.mode == MAV_MODE_FLAG_GUIDED_ENABLED){
+
+        if (guided && !armed){
             armedMode = "GUIDED_DISARMED";
-        } else if (droneState.mode == MAV_MODE_FLAG_GUIDED_ENABLED || MAV_MODE_FLAG_SAFETY_ARMED) {
+        } else if (guided && armed) {
             armedMode = "GUIDED_ARMED";
         } else {
             armedMode = "UNKNOWN";
         }
-        
-        if (isConnected()){
-            printf("[GCS]: Drone connected\n");
-            printf("[ARM]: %s\n", armedMode.c_str());
-            printf("[ X ]: %f\n", droneState.x);
-            printf("[ Y ]: %f\n", droneState.y);
-            printf("[Alt]: %f\n", droneState.alt);
-        } else {
-            printf("[GCS]: Drone disconnected\n");
-        }
-        printf("[HBT]: %d ms since HBT\n", (int)elapsed.count());
-        this_thread::sleep_for(chrono::milliseconds(1000));
+        printf("[HBT]: ms since last - %d\n[ARM]: %s\n[ X ]: %f\n[ Y ]: %f\n[Alt]: %f\n", 
+            (int)elapsed.count(),
+            armedMode.c_str(),
+            droneState.x,
+            droneState.y,
+            droneState.alt
+        );
     }
     printf("[GCS]: Information displaying stopped.\n");
 }
 
-bool GCS::isConnected() {
-        return this->udpServer.isConnected();
+void GCS::sendArm() {
+    server.sendArm();
+}
+
+void GCS::sendDisarm() {
+    server.sendDisarm();
+}
+
+void GCS::sendGoTo(float x, float y, float alt) {
+    server.sendGoTo(x, y, alt);
+}
+
+bool GCS::pollIncoming(int timeout_ms) {
+    return server.pollSocket(timeout_ms);
+}
+
+void GCS::handleIncoming(){
+    mavlink_message_t incoming = server.receiveMessage();
+    switch (incoming.msgid) {
+        case MAVLINK_MSG_ID_HEARTBEAT:
+            mavlink_heartbeat_t heartbeat;
+            heartbeat = server.decodeHeartbeat(incoming);
+            updateHeartbeat(heartbeat.base_mode);
+            break;
+
+        case MAVLINK_MSG_ID_LOCAL_POSITION_NED:
+            mavlink_local_position_ned_t dronePos;
+            dronePos = server.decodePosition(incoming);
+            updateDronePos(dronePos.x, dronePos.y, -dronePos.z);
+            break;
+
+        case MAVLINK_MSG_ID_COMMAND_ACK:
+            mavlink_command_ack_t ack;
+            ack = server.decodeAck(incoming);
+            printf("\n[GCS]: Received ACK for: %d\n", ack.command);
+            break;
+
+        default:
+            printf("[GCS]: Received unexpected message: %d \n", incoming.msgid);
+            break;
     }
-UDPServer* GCS::getServerPointer(){
-    return &udpServer;
 }

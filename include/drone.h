@@ -1,7 +1,12 @@
 #pragma once
+#ifndef DRONE_H
 
-#include "udp_client.h"
-#include <lnl/lnl.h>
+#include <algorithm>
+#include <thread>
+#include <chrono>
+#include <cmath>
+
+#include "new_udp_client.h"
 
 struct Position{
     float x = 0;
@@ -13,32 +18,37 @@ class Drone {
 
 public:
 
-    Drone(float speed, float geofence, lnl::net_address serverAdress);
+    Drone(float speed, float geofence, int clientPort);
 
     void updatePosition();
-    //Virtual functions for gtest
-    virtual void setArmedState(bool state);
 
-    virtual void setTargetPos(float x, float y, float alt);
+    void setCurrentPosition(float x, float y, float alt);
 
-    void send_heartbeat();
+    void setArmedState(bool state);
 
-    void send_position();
+    bool getArmedState();
 
-    virtual void send_ack(int command);
+    void setTargetPos(float x, float y, float alt);
 
-    bool isConnected();
+    Position getTargetPos();
 
-    bool isArmed();
+    void sendHeartbeat();
 
-protected:
-    UDPClient* getClientPointer(); //Messed up, need this for gtest
+    void sendPosition();
+
+    bool pollIncoming(int timeout_ms);
+
+    void handleIncoming();
 
 private:
     bool armed = false;
+    float speed;
+    float geofence; // geofence is a square with sides of 2*geofence, centered on 0,0,0
+    
     Position currentPos;
     Position targetPos;
-    float geofence; // geofence is a square with sides of 2*geofence, centered on 0,0,0
-    float speed;
-    UDPClient udpClient;
+
+    thread clientThread;
+    UDPClient client;
 };
+#endif

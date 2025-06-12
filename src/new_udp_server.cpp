@@ -74,32 +74,29 @@ void UDPServer::sendGoTo(float x, float y, float alt) {
     connection.sendto(buffer, message_length, clientAddress);
 }
 
-bool UDPServer::messageAvailable(){
-    if (connection.available() > 0){
-        return true;
-    } else {
-        return false;
-    }
+bool UDPServer::pollSocket(int timeout_ms){
+    return connection.poll_read(timeout_ms);
 }
 
 mavlink_message_t UDPServer::receiveMessage() {
-    while (1) {
-        if (connection.available() > 0) {
-            char buffer[1024];
-            IpAddress from;
-            int bytesReceived = connection.recvfrom(buffer, sizeof(buffer), from);
-            mavlink_message_t msg;
-            mavlink_status_t status;
+    while (connection.available()) {
+        char buffer[1024];
+        IpAddress from;
+        int bytesReceived = connection.recvfrom(buffer, sizeof(buffer), from);
+        
+        mavlink_message_t msg;
+        mavlink_status_t status;
             
-            for (size_t i = 0; i < bytesReceived; ++i) {
-                if (mavlink_parse_char(MAVLINK_COMM_0, buffer[i], &msg, &status)) {
-                    return msg;
-                }
+        for (size_t i = 0; i < bytesReceived; ++i) {
+            if (mavlink_parse_char(MAVLINK_COMM_0, buffer[i], &msg, &status)) {
+                return msg;
             }
         }
         this_thread::sleep_for(std::chrono::milliseconds(5));
     }
-    printf("[UDP SERVER]: Exited without getting complete message.\n");
+    mavlink_message_t errorPlaceholder;
+    errorPlaceholder.msgid = 0;
+    return errorPlaceholder;
 }
 
 mavlink_heartbeat_t UDPServer::decodeHeartbeat(mavlink_message_t message) {

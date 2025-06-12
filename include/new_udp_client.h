@@ -19,8 +19,8 @@ class UDPClient {
         void sendPosition(float x, float y, float alt);
 
         void sendAck(mavlink_command_long_t command, int senderSysID, int senderCompID);
-        
-        bool commandAvailable();
+
+        bool pollSocket(int timeout_ms);
 
         mavlink_command_long_t receiveCommand();
 

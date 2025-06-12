@@ -1,21 +1,20 @@
 #include "drone.h"
 
-#include <algorithm>
-#include <thread>
-#include <chrono>
-#include <cmath>
-
 #define SYSID 1
 #define COMPID 1
+#define GCS_SYSID 255
+#define GCS_COMPID 190
 
 using namespace std;
 
-Drone::Drone(float speed, float geofence, lnl::net_address serverAdress) : speed(speed), geofence(geofence), udpClient(serverAdress){
-    udpClient.setOwner(this);
-    printf("[DRONE]: Drone setup complete!\n");
+Drone::Drone(float speed, float geofence, int clientPort):
+speed(speed),
+geofence(geofence),
+client(clientPort, "127.0.0.1", 4499) {
+    printf("[DRONE]: Setup complete.\n");
 }
 
-void Drone::updatePosition(){
+void Drone::updatePosition() {
     float dx = targetPos.x - currentPos.x;
     float dy = targetPos.y - currentPos.y;
     float dz = targetPos.alt - currentPos.alt;
@@ -31,90 +30,86 @@ void Drone::updatePosition(){
     currentPos.alt = clamp(currentPos.alt + (dz / distance) * step, -geofence, geofence);
 }
 
-void Drone::setArmedState(bool state){
+void Drone::setCurrentPosition(float x, float y, float alt) {
+    currentPos.x = x;
+    currentPos.y = y;
+    currentPos.alt = alt;
+}
+
+void Drone::setArmedState(bool state) {
     armed = state;
 }
 
-void Drone::setTargetPos(float x, float y, float alt){
+bool Drone::getArmedState() {
+    return armed;
+}
+
+void Drone::setTargetPos(float x, float y, float alt) {
     targetPos.x = x;
     targetPos.y = y;
     targetPos.alt = alt;
 }
 
-void Drone::send_heartbeat(){
-    mavlink_message_t heartbeat;
-    int mode = MAV_MODE_FLAG_GUIDED_ENABLED;
-
-    if (armed) {
-        mode |= MAV_MODE_FLAG_SAFETY_ARMED;
-    }
-
-    mavlink_msg_heartbeat_pack(
-        SYSID,
-        COMPID,
-        &heartbeat,
-        MAV_TYPE_QUADROTOR,
-        MAV_AUTOPILOT_GENERIC,
-        mode,
-        0,
-        MAV_STATE_ACTIVE
-    );
-
-    uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
-    size_t message_length = mavlink_msg_to_send_buffer(buffer, &heartbeat);
-
-    this->udpClient.sendBinary(buffer, message_length);
+Position Drone::getTargetPos() {
+    return targetPos;
 }
 
-void Drone::send_position(){
-    mavlink_message_t position;
-    
-    mavlink_msg_local_position_ned_pack(
-        1, //system ID
-        1, //component ID
-        &position,
-        0, //ms since system boot, won't be sending
-        currentPos.x,
-        currentPos.y,
-        -currentPos.alt, //to convert altitude to NED format
-        0, 0, 0 // velocities, not simulating atm.
-    );
-
-    uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
-    size_t message_length = mavlink_msg_to_send_buffer(buffer, &position);
-
-    this->udpClient.sendBinary(buffer, message_length);
+void Drone::sendHeartbeat() {
+    client.sendHeartbeat(armed);
+    printf("[DRONE]: Sent heartbeat packet.\n");
 }
 
-void Drone::send_ack(int command){
-    mavlink_message_t ack;
-
-    mavlink_msg_command_ack_pack(
-        1, //system ID
-        1, //component ID
-        &ack,
-        command, // what command is being acknowledged
-        MAV_RESULT_ACCEPTED, // is good?
-        0, // progress unused
-        0, // extra param unused
-        255, // target system ID - GCS for me
-        190 // target component ID - GCS for me
-    );
-
-    uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
-    size_t message_length = mavlink_msg_to_send_buffer(buffer, &ack);
-
-    this->udpClient.sendBinary(buffer, message_length);
+void Drone::sendPosition() {
+    client.sendPosition(currentPos.x, currentPos.y, currentPos.alt);
+    printf("[DRONE]: Sent position packet.\n");
+    printf("[DRONE]: X: %f Y: %f ALT: %f\n", currentPos.x, currentPos.y, currentPos.alt);
 }
 
-bool Drone::isConnected() {
-    return udpClient.isConnected();
+bool Drone::pollIncoming(int timeout_ms) {
+    return client.pollSocket(timeout_ms);
 }
 
-bool Drone::isArmed() {
-    return armed;
-}
+void Drone::handleIncoming() {
+    mavlink_command_long_t command = client.receiveCommand();
+    switch (command.command) {
+        case MAV_CMD_DO_SET_MODE:
+            switch ((int)command.param2) {
+                client.sendAck(command, GCS_SYSID, GCS_COMPID);
+                printf("[DRONE]: Sent ACK\n");
+                case MAV_MODE_GUIDED_ARMED:
+                    printf("[DRONE]: ARM\n");
+                    setArmedState(true);
+                    break;
+                
+                case MAV_MODE_GUIDED_DISARMED:
+                    printf("[DRONE]: DISARM\n");
+                    setArmedState(false);
+                    break;
 
-UDPClient* Drone::getClientPointer(){
-    return &udpClient;
+                default:
+                    printf("[DRONE]: Received unknown armed state.\n");
+                    break;
+                }
+                break;
+        case MAV_CMD_OVERRIDE_GOTO: 
+            client.sendAck(command, GCS_SYSID, GCS_COMPID);
+            printf("[DRONE]: Sent ACK\n");
+            {
+                float x = command.param5;
+                float y = command.param6;
+                float alt = -command.param7;
+                printf("[DRONE]: GOTO - X: %f Y: %f ALT: %f\n", x, y, alt);
+                setTargetPos(x, y, alt);
+                break;
+            }
+        case 1:
+            printf("[DRONE]: Not connected to server!\n");
+            break;
+        case 0:
+            printf("[DRONE]: Failed to read complete packet!\n");
+            break;
+        default:
+            printf("[DRONE]: Received unknown command!\n");
+            break;
+        }
 }

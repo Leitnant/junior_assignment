@@ -1,10 +1,14 @@
 # /test/CMakeLists.txt
 
-add_executable(NetTest test_net_manager.cpp ${CMAKE_SOURCE_DIR}/src/udp_client.cpp ${CMAKE_SOURCE_DIR}/src/udp_server.cpp ${CMAKE_SOURCE_DIR}/src/listener_client.cpp ${CMAKE_SOURCE_DIR}/src/listener_server.cpp ${CMAKE_SOURCE_DIR}/src/gcs.cpp ${CMAKE_SOURCE_DIR}/src/drone.cpp )
+add_executable(DroneTest drone_test.cpp ${CMAKE_SOURCE_DIR}/src/new_udp_client.cpp ${CMAKE_SOURCE_DIR}/src/new_udp_server.cpp ${CMAKE_SOURCE_DIR}/src/drone.cpp ${CMAKE_SOURCE_DIR}/src/gcs.cpp)
+target_link_libraries(DroneTest PRIVATE gtest_main SimpleUdp)
+target_include_directories(DroneTest PRIVATE ${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/libs/mavlink/common ${CMAKE_SOURCE_DIR}/libs/simpleudp)
 
-target_link_libraries(NetTest PRIVATE gtest_main lnl)
+add_executable(GCSTest gcs_test.cpp ${CMAKE_SOURCE_DIR}/src/new_udp_client.cpp ${CMAKE_SOURCE_DIR}/src/new_udp_server.cpp ${CMAKE_SOURCE_DIR}/src/drone.cpp ${CMAKE_SOURCE_DIR}/src/gcs.cpp)
+target_link_libraries(GCSTest PRIVATE gtest_main SimpleUdp)
+target_include_directories(GCSTest PRIVATE ${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/libs/mavlink/common ${CMAKE_SOURCE_DIR}/libs/simpleudp)
 
-target_include_directories(NetTest PRIVATE ${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/libs/mavlink/common)
 
 include(GoogleTest)
-gtest_discover_tests(NetTest)
+gtest_discover_tests(DroneTest)
+gtest_discover_tests(GCSTest)

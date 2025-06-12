@@ -1,31 +1,34 @@
 #include "drone.h"
-#include <lnl/lnl.h>
+
 using namespace std;
+using time_source = chrono::system_clock;
+using time_point = time_source::time_point;
+using duration = time_source::duration;
+
+float speed = 0.5;
+float geofence = 100;
+int clientPort = 4498;
+duration messageInterval = 100ms;
 
 int main() {
-    lnl::initialize();
-
     printf("[DRONE]: Initialising drone...\n");
-    lnl::net_address address("127.0.0.1", 4499);
-    Drone drone(0.5, 10, address);
+    Drone drone(speed, geofence, clientPort);
 
-    chrono::steady_clock::time_point prevTime = chrono::steady_clock::now();
-
+    time_point prevTime = time_source::now();
     while (1) {
-        if (drone.isConnected()) {
-            if (drone.isArmed()) {
+        time_point currentTime = time_source::now();
+        if (currentTime - prevTime >= messageInterval){
+            if (drone.getArmedState()) {
                 drone.updatePosition();
             }
-            chrono::steady_clock::time_point currentTime = chrono::steady_clock::now();
-
-            if (currentTime - prevTime >= chrono::milliseconds(100)){
-                drone.send_heartbeat();
-                drone.send_position();
-                prevTime = currentTime;
-            }
+            drone.sendHeartbeat();
+            drone.sendPosition();
+            prevTime = currentTime;
         }
-        this_thread::sleep_for(chrono::milliseconds(5));
+    if (drone.pollIncoming(15)) {
+        drone.handleIncoming();
     }
-
+    this_thread::sleep_for(5ms);
+    }
     return 0;
 }

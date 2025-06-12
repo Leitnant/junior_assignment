@@ -20,7 +20,7 @@ class UDPServer {
 
         void sendGoTo(float x, float y, float alt);
 
-        bool messageAvailable();
+        bool pollSocket(int timeout_ms);
 
         mavlink_message_t receiveMessage();
 

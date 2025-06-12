@@ -1,6 +1,3 @@
-[submodule "libs/LiteNetLibPP"]
-	path = libs/LiteNetLibPP
-	url = https://github.com/RedFox20/LiteNetLibPP.git
 [submodule "libs/glfw"]
 	path = libs/glfw
 	url = https://github.com/glfw/glfw.git

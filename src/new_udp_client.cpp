@@ -3,6 +3,7 @@
 UDPClient::UDPClient(int clientPort, string serverIP, int serverPort) {
     if(!connection.create(clientPort, false)){
         printf("[UDP SERVER]: Failed to create socket.");
+        while (1) {}
     }
     serverAddress = IpAddress(serverIP.c_str(), serverPort);
 }   
@@ -12,7 +13,6 @@ void UDPClient::sendHeartbeat(bool armed) {
     if (armed) {
         modeFlags |= MAV_MODE_FLAG_SAFETY_ARMED;
     }
-
     mavlink_message_t heartbeat;
     mavlink_msg_heartbeat_pack(
         SYSID,
@@ -70,33 +70,35 @@ void UDPClient::sendAck(mavlink_command_long_t command, int senderSysID, int sen
     connection.sendto(buffer, message_length, serverAddress);
 }
 
-bool UDPClient::commandAvailable() {
-    if (connection.available() > 0){
-        return true;
-    } else {
-        return false;
-    }
+bool UDPClient::pollSocket(int timeout_ms) {
+    return connection.poll_read(timeout_ms);
 }
 
 mavlink_command_long_t UDPClient::receiveCommand() {
-    while (1) {
-        if (connection.available() > 0) {
-            char buffer[1024];
-            IpAddress from;
-            int bytesReceived = connection.recvfrom(buffer, sizeof(buffer), from);
+    mavlink_command_long_t errorPlaceholder;
 
-            mavlink_message_t msg;
-            mavlink_status_t status;
-            
-            for (size_t i = 0; i < bytesReceived; ++i) {
-                if (mavlink_parse_char(MAVLINK_COMM_0, buffer[i], &msg, &status)) {
-                    mavlink_command_long_t command;
-                    mavlink_msg_command_long_decode(&msg, &command);
-                    return command;
-                }
+    while (connection.available()) {
+        char buffer[1024];
+        IpAddress from;
+        int bytesReceived = connection.recvfrom(buffer, sizeof(buffer), from);
+        if (bytesReceived <= 0) {
+            errorPlaceholder.command = 1;
+            return errorPlaceholder; // not connected
+        }
+        printf("%d",bytesReceived);
+        mavlink_message_t msg;
+        mavlink_status_t status;
+        
+        for (size_t i = 0; i < bytesReceived; ++i) {
+            if (mavlink_parse_char(MAVLINK_COMM_0, buffer[i], &msg, &status)) {
+                mavlink_command_long_t command;
+                mavlink_msg_command_long_decode(&msg, &command);
+                return command;
             }
+            
         }
         this_thread::sleep_for(std::chrono::milliseconds(5));
     }
-    printf("[UDP CLIENT]: Exited without getting complete message.\n");
+    errorPlaceholder.command = 0; // did not get full packet
+    return errorPlaceholder;
 }

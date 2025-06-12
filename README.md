@@ -25,7 +25,12 @@ GCS aknasse, kuhu peaks ka kirjutama sisendi, jookseb drooni telemeetria, mille 
 
 ## Telemeetria
 **[HBT]:**  kuvan möödunud aega viimasest saabunud *heartbeat*-ist `CONNECTED` / `DISCONNECTED` asemel
+
 **[ARM]:** `GUIDED_ARMED`/`GUIDED_DISARMED`
+
 **[ X ]:** `X koordinaat`
+
 **[ Y ]:** `Y koordinaat`
+
 **[ALT]:** `ALT koordinaat`
+

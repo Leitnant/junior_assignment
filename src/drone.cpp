@@ -14,6 +14,10 @@ client(clientPort, "127.0.0.1", 4499) {
     printf("[DRONE]: Setup complete.\n");
 }
 
+Drone::~Drone() {
+    client.~UDPClient();
+}
+
 void Drone::updatePosition() {
     float dx = targetPos.x - currentPos.x;
     float dy = targetPos.y - currentPos.y;

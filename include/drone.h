@@ -20,6 +20,8 @@ public:
 
     Drone(float speed, float geofence, int clientPort);
 
+    ~Drone();
+
     void updatePosition();
 
     void setCurrentPosition(float x, float y, float alt);

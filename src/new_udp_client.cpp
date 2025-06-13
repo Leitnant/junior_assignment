@@ -8,6 +8,10 @@ UDPClient::UDPClient(int clientPort, string serverIP, int serverPort) {
     serverAddress = IpAddress(serverIP.c_str(), serverPort);
 }   
 
+UDPClient::~UDPClient() {
+    connection.close();
+}
+
 void UDPClient::sendHeartbeat(bool armed) {
     int modeFlags = MAV_MODE_FLAG_GUIDED_ENABLED;
     if (armed) {

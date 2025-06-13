@@ -13,6 +13,8 @@ using namespace chrono_literals;
 class UDPServer {
     public:
         UDPServer(int serverPort, string clientIP, int clientPort);
+        
+        ~UDPServer();
 
         void sendArm();
         

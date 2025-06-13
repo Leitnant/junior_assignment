@@ -7,6 +7,10 @@ UDPServer::UDPServer(int serverPort, string clientIP, int clientPort) {
     clientAddress = IpAddress(clientIP.c_str(), clientPort);
 }
 
+UDPServer::~UDPServer() {
+    connection.close();
+}
+
 void UDPServer::sendArm() {
     mavlink_message_t msg;
 

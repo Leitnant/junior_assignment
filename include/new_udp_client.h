@@ -13,6 +13,8 @@ using namespace chrono_literals;
 class UDPClient {
     public:
         UDPClient(int clientPort, string serverAddress, int serverPort);
+        
+        ~UDPClient();
 
         void sendHeartbeat(bool armed);
 

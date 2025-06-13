@@ -6,6 +6,7 @@
 using namespace std;
 
 GCS::GCS(int serverPort):server(serverPort, "127.0.0.1", 4498) {
+    startDisplayLoop();
     printf("[GCS]: Setup complete.\n");
 }
 
@@ -13,6 +14,7 @@ GCS::~GCS() {
     if (dispRunning) {
         stopDisplayLoop();
     }
+    server.~UDPServer();
 }
 
 void GCS::setDroneState(float x, float y, float alt, int mode) {

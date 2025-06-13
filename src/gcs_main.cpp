@@ -14,8 +14,6 @@ enum Action {
 int main() {
     printf("[GCS]: Starting GCS...\n");
     GCS gcs(4499);
-    
-    gcs.startDisplayLoop();
 
     string input;
     int choice;
@@ -59,6 +57,5 @@ int main() {
                 break;
         }
     }
-    gcs.stopDisplayLoop();
     return 0;
 }
